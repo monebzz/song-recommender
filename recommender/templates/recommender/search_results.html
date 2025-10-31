@@ -1,0 +1,102 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}Search Results - Song Recommender{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="hero-title mb-4">
+                Search Results for "{{ query }}"
+            </h1>
+            <div class="hero-actions">
+                <a href="{% url 'home' %}" class="btn btn-outline-primary btn-lg">
+                    New Search
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container" style="padding: 2rem 1rem;">
+    <div class="row justify-content-center">
+        <div class="col-12">
+
+            {% if not has_subscription %}
+            <div class="alert alert-warning mb-3">
+                You've used {{ usage_count }} of {{ usage_limit }} free searches today.
+                <a href="{% url 'subscribe' %}" class="alert-link">Subscribe for unlimited access!</a>
+            </div>
+            {% else %}
+            <div class="alert alert-success mb-3">
+                You have unlimited searches with your subscription!
+            </div>
+
+            {% if songs %}
+            <div class="row g-30">
+                {% for song in songs %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 song-card">
+                        {% if song.cover %}
+                        <div class="card-img-container">
+                            <img src="{{ song.cover }}" alt="{{ song.title }} cover" class="card-img">
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ song.title }}</h5>
+                            <p class="card-text">
+                                <span class="text-muted">{{ song.artist }}</span><br>
+                                {% if song.album %}
+                                <small class="text-muted">{{ song.album }}</small>
+                                {% endif %}
+                            </p>
+
+                            <!-- Sentiment Badge -->
+                            {% if song.sentiment is not None %}
+                            <div class="mb-3">
+                                {% if song.sentiment > 0.3 %}
+                                <span class="badge bg-success">
+                                    Positive ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% elif song.sentiment < -0.3 %}
+                                <span class="badge bg-danger">
+                                    Negative ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    Neutral ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Audio Preview -->
+                            {% if song.preview %}
+                            <audio controls class="w-100 mb-3">
+                                <source src="{{ song.preview }}" type="audio/mpeg">
+                            </audio>
+                            {% endif %}
+
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'song_detail' song.deezer_id %}" class="btn btn-primary btn-sm">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card p-5 text-center centered-card">
+                <h4>No songs found for "{{ query }}"</h4>
+                <p class="lead">Try a different search term.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,136 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}{{ mood_display }} Songs - Song Recommender{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="hero-title mb-4">
+                🎵 Your Personalized Playlist
+            </h1>
+
+            {% if mood_text %}
+            <div class="glass-card d-inline-block px-5 py-3 mb-4">
+                <p class="hero-subtitle mb-0">
+                    <em>"{{ mood_text }}"</em>
+                </p>
+            </div>
+            {% endif %}
+
+            <p class="hero-subtitle mb-4">
+                We detected you're feeling <strong class="text-gradient">{{ mood_display }}</strong>
+            </p>
+
+            <div class="mb-4">
+                <span class="badge bg-info px-4 py-2">
+                    Today's Recommendations: {{ usage_count }} / {{ free_limit }}
+                    {% if profile.has_active_subscription %}
+                    (Unlimited ⭐)
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'home' %}" class="btn btn-outline-primary btn-lg">
+                    Try Different Mood
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container" style="padding: 2rem 1rem;">
+    <div class="row justify-content-center">
+        <div class="col-12">
+
+            <!-- Recommendations -->
+            {% if recommendations %}
+            <div class="row g-30 mb-4">
+                {% for song in recommendations %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 song-card">
+                        {% if song.cover %}
+                        <div class="card-img-container">
+                            <img src="{{ song.cover }}" alt="{{ song.title }} cover" class="card-img">
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ song.title }}</h5>
+                            <p class="card-text">
+                                <span class="text-muted">{{ song.artist }}</span><br>
+                                {% if song.album %}
+                                <small class="text-muted">{{ song.album }}</small>
+                                {% endif %}
+                            </p>
+
+                            <!-- Sentiment Badge -->
+                            {% if song.sentiment is not None %}
+                            <div class="mb-3">
+                                {% if song.sentiment > 0.3 %}
+                                <span class="badge bg-success">
+                                    Positive ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% elif song.sentiment < -0.3 %}
+                                <span class="badge bg-danger">
+                                    Negative ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    Neutral ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Audio Preview -->
+                            {% if song.preview %}
+                            <audio controls class="w-100 mb-3">
+                                <source src="{{ song.preview }}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                            {% endif %}
+
+                            <div class="d-grid gap-2">
+                                {% if song.link %}
+                                <a href="{{ song.link }}" target="_blank" class="btn btn-primary btn-sm">
+                                    Play on Deezer
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'song_detail' song.deezer_id %}" class="btn btn-outline-primary btn-sm">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card p-5 text-center mb-5 centered-card">
+                <h4>No Songs Found</h4>
+                <p class="lead">We don't have enough songs in our database yet for your {{ mood_display }} mood.</p>
+                <p class="text-muted">
+                    <strong>Admin:</strong> Run <code>python manage.py seed_songs --q 'pop' --limit 100</code> to add songs.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Try Another Mood -->
+            <div class="text-center">
+                <a href="{% url 'home' %}" class="btn btn-primary btn-lg">
+                    Try Another Mood
+                </a>
+                {% if not profile.has_active_subscription %}
+                <a href="{% url 'subscribe' %}" class="btn btn-success btn-lg ms-3">
+                    Get Unlimited
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

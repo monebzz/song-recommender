@@ -1,0 +1,140 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}Checkout - Song Recommender{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-credit-card"></i> Checkout</h4>
+            </div>
+            <div class="card-body">
+                <h5>Order Summary</h5>
+                <hr>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Plan:</span>
+                    <strong>{{ plan_type|title }}</strong>
+                </div>
+
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Amount:</span>
+                    <strong>${{ amount }}</strong>
+                </div>
+
+                <hr>
+
+                <!-- Payment Form -->
+                <form id="payment-form">
+                    <div class="mb-3">
+                        <label for="card-element" class="form-label">Card Details</label>
+                        <div id="card-element" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: white;"></div>
+                        <div id="card-errors" role="alert" style="color: #dc3545; margin-top: 10px; display: none;"></div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" id="pay-button" class="btn btn-primary btn-lg">
+                            <i class="bi bi-lock"></i> Pay ${{ amount }}
+                        </button>
+                        <a href="{% url 'subscribe' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-check"></i> Secure payment powered by Stripe
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>What happens next?</h6>
+                <ol class="small mb-0">
+                    <li>Enter your card details above</li>
+                    <li>Click "Pay" to complete payment</li>
+                    <li>Your subscription will be activated automatically</li>
+                    <li>Start enjoying unlimited searches!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stripe JS -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stripe = Stripe("{{ publishable_key }}");
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    card.mount('#card-element');
+
+    // Handle card errors
+    card.addEventListener('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+            displayError.style.display = 'block';
+        } else {
+            displayError.style.display = 'none';
+        }
+    });
+
+    // Handle form submission
+    document.getElementById('payment-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const payButton = document.getElementById('pay-button');
+        payButton.disabled = true;
+        payButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+        try {
+            // Create payment method
+            const {error: pmError, paymentMethod} = await stripe.createPaymentMethod({
+                type: 'card',
+                card: card
+            });
+
+            if (pmError) {
+                document.getElementById('card-errors').textContent = pmError.message;
+                document.getElementById('card-errors').style.display = 'block';
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="bi bi-lock"></i> Pay ${{ amount }}';
+                return;
+            }
+
+            // Confirm payment
+            const {error, paymentIntent} = await stripe.confirmCardPayment("{{ client_secret }}", {
+                payment_method: paymentMethod.id
+            });
+
+            if (error) {
+                document.getElementById('card-errors').textContent = error.message;
+                document.getElementById('card-errors').style.display = 'block';
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="bi bi-lock"></i> Pay ${{ amount }}';
+            } else if (paymentIntent.status === 'succeeded') {
+                // Payment successful - redirect to success page
+                window.location.href = '/checkout/success/?session_id=' + paymentIntent.id;
+            } else {
+                document.getElementById('card-errors').textContent = 'Payment status: ' + paymentIntent.status;
+                document.getElementById('card-errors').style.display = 'block';
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="bi bi-lock"></i> Pay ${{ amount }}';
+            }
+        } catch (err) {
+            document.getElementById('card-errors').textContent = 'An error occurred: ' + err.message;
+            document.getElementById('card-errors').style.display = 'block';
+            payButton.disabled = false;
+            payButton.innerHTML = '<i class="bi bi-lock"></i> Pay ${{ amount }}';
+        }
+    });
+});
+</script>
+{% endblock %}
+

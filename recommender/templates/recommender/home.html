@@ -1,0 +1,293 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}Home - Song Recommender{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="text-center">
+            <div class="mb-4">
+                <span class="badge bg-primary text-white px-4 py-2 fw-bold">
+                    ✨ AI-Powered Music Discovery
+                </span>
+            </div>
+            <h1 class="hero-title mb-4">
+                🎵 How Are You<br>
+                <span class="text-gradient-secondary">Feeling Today?</span>
+            </h1>
+            <p class="hero-subtitle mb-5">
+                Express your emotions in natural language and discover the perfect soundtrack for your mood
+            </p>
+
+            {% if not user.is_authenticated %}
+            <div class="hero-actions">
+                <a href="{% url 'signup' %}" class="btn btn-primary btn-lg px-4 py-3">
+                    🚀 Get Started Free
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4 py-3">
+                    Sign In
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="container">
+    <div class="row justify-content-center">
+        <div class="col-12">
+
+            {% if user.is_authenticated %}
+            <!-- Usage Stats Card -->
+            <div class="text-center section-spacing">
+                <div class="card d-inline-block px-4 py-3">
+                    {% if profile.has_active_subscription %}
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning text-dark px-3 py-2" style="font-weight: 600;">
+                            ⭐ PRO
+                        </span>
+                        <span class="fw-bold text-gradient">Unlimited Access</span>
+                    </div>
+                    {% else %}
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="position-relative">
+                            <svg width="50" height="50" style="transform: rotate(-90deg);">
+                                <circle cx="25" cy="25" r="20" fill="none" stroke="#e0e0e0" stroke-width="4"/>
+                                <circle cx="25" cy="25" r="20" fill="none" stroke="url(#gradient)" stroke-width="4"
+                                        stroke-dasharray="{{ usage_count|floatformat:0 }} {{ free_limit|floatformat:0 }}"
+                                        stroke-linecap="round"/>
+                                <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <span class="position-absolute top-50 start-50 translate-middle fw-bold" style="font-size: 0.75rem;">
+                                {{ usage_count }}/{{ free_limit }}
+                            </span>
+                        </div>
+                        <div class="text-start">
+                            <div class="fw-bold text-gradient">Today's Recommendations</div>
+                            <small class="text-muted">{{ free_limit|add:"-"|add:usage_count|floatformat:0 }} remaining</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Express Your Mood Card - ULTRA PREMIUM REDESIGN -->
+            <div class="mood-card-premium">
+                <!-- Header Section -->
+                <div class="mood-header-premium">
+                    <div class="mood-header-content-premium">
+                        <!-- Left Side - Icon -->
+                        <div class="mood-icon-premium">
+                            <span class="mood-icon-emoji">💭</span>
+                        </div>
+
+                        <!-- Right Side - Text Content -->
+                        <div class="mood-text-content-premium">
+                            <div class="mood-badge-premium">STEP 1</div>
+                            <h2 class="mood-heading-premium">EXPRESS YOUR MOOD</h2>
+                            <p class="mood-subtitle-premium">Tell us how you're feeling in your own words and let AI find your perfect soundtrack</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Body Section -->
+                <div class="mood-form-body-premium">
+                    <form method="post" action="{% url 'home' %}" class="mood-form-premium">
+                        {% csrf_token %}
+
+                        <!-- Label -->
+                        <label for="mood_text" class="mood-label-premium">How are you feeling today?</label>
+
+                        <!-- Textarea Container -->
+                        <div class="mood-textarea-container-premium">
+                            <textarea
+                                name="mood_text"
+                                id="mood_text"
+                                class="mood-textarea-premium"
+                                placeholder="✍️ Type freely... Examples:
+• 'I'm feeling incredibly energized and ready to conquer the world!'
+• 'Feeling melancholic and need something soothing...'
+• 'I'm in love and everything feels like a dream!'
+• 'Need powerful motivation to push through challenges'"
+                                required
+                                autofocus
+                                maxlength="500"
+                            ></textarea>
+                            <div class="mood-char-counter-premium">
+                                <span id="char-count">0</span>/500
+                            </div>
+                        </div>
+
+                        <!-- Pro Tip Box -->
+                        <div class="mood-pro-tip-premium">
+                            <div class="mood-tip-content-premium">
+                                <span class="mood-tip-icon-premium">💡</span>
+                                <div class="mood-tip-text-premium">
+                                    <strong class="mood-tip-title-premium">PRO TIP:</strong>
+                                    <span class="mood-tip-description-premium">The more descriptive you are, the better our AI can understand your emotional state and musical preferences!</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="mood-submit-btn-premium" id="mood-submit">
+                            <span class="mood-btn-content-premium">
+                                <span class="mood-btn-icon-premium">🎵</span>
+                                <span class="mood-btn-text-premium">DISCOVER MY PERFECT PLAYLIST</span>
+                                <span class="mood-btn-icon-premium">✨</span>
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Not Logged In - CTA -->
+            <div class="auth-wrapper">
+                <div class="auth-container">
+                    <!-- Badge -->
+                    <div class="welcome-badge">
+                        🎉 Join thousands of music lovers
+                    </div>
+
+                    <!-- Heading -->
+                    <h1 class="welcome-heading">
+                        Welcome to<br>
+                        <span class="brand-gradient">Song Recommender</span>
+                    </h1>
+
+                    <!-- Description -->
+                    <p class="welcome-description">
+                        Experience AI-powered music discovery that understands your emotions and finds the perfect soundtrack for every moment.
+                    </p>
+
+                    <!-- CTA Buttons -->
+                    <div class="auth-buttons">
+                        <a href="{% url 'signup' %}" class="btn-primary-large">
+                            🚀 Create Free Account
+                        </a>
+                        <a href="{% url 'login' %}" class="btn-outline-large">
+                            Already have an account? Sign in
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Feature Cards -->
+            <div class="text-center section-spacing centered-card">
+                <div class="row justify-content-center g-30">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body p-4 text-center">
+                                <div class="mb-4">
+                                    <div class="bg-primary rounded-circle p-4 d-inline-flex" style="width: 80px; height: 80px; align-items: center; justify-content: center;">
+                                        <span style="font-size: 2.5rem; color: white;">💬</span>
+                                    </div>
+                                </div>
+                                <h5 class="fw-bold mb-3">Natural Language</h5>
+                                <p class="mb-0">Express yourself freely in your own words - no need for tags or categories</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body p-4 text-center">
+                                <div class="mb-4">
+                                    <div class="bg-info rounded-circle p-4 d-inline-flex" style="width: 80px; height: 80px; align-items: center; justify-content: center;">
+                                        <span style="font-size: 2.5rem; color: white;">🧠</span>
+                                    </div>
+                                </div>
+                                <h5 class="fw-bold mb-3">Emotion Detection</h5>
+                                <p class="mb-0">Advanced AI analyzes your emotional state and musical preferences</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body p-4 text-center">
+                                <div class="mb-4">
+                                    <div class="bg-success rounded-circle p-4 d-inline-flex" style="width: 80px; height: 80px; align-items: center; justify-content: center;">
+                                        <span style="font-size: 2.5rem; color: white;">🎵</span>
+                                    </div>
+                                </div>
+                                <h5 class="fw-bold mb-3">Perfect Matches</h5>
+                                <p class="mb-0">Discover songs that resonate deeply with your current emotional state</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Proof Section -->
+            <div class="card p-5 text-center section-spacing centered-card">
+                <div class="row align-items-center g-4">
+                    <div class="col-md-4">
+                        <div class="fw-bold mb-2" style="font-size: 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">10K+</div>
+                        <p class="mb-0" style="color: #666;">Happy Users</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="fw-bold mb-2" style="font-size: 2.5rem; background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">50K+</div>
+                        <p class="mb-0" style="color: #666;">Songs Recommended</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="fw-bold mb-2" style="font-size: 2.5rem; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">98%</div>
+                        <p class="mb-0" style="color: #666;">Satisfaction Rate</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if user.is_authenticated and not profile.has_active_subscription %}
+            <!-- Premium Upgrade CTA -->
+            <div class="card section-spacing centered-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 20px; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);">
+                <div class="card-body p-5 text-white text-center">
+                    <div class="mb-3">
+                        <span class="badge bg-warning text-dark px-4 py-2 fw-bold" style="box-shadow: 0 2px 10px rgba(0,0,0,0.2);">⚡ LIMITED OFFER</span>
+                    </div>
+                    <h2 class="fw-bold mb-3">Upgrade to Premium</h2>
+                    <p class="lead mb-4" style="opacity: 0.9;">
+                        Get unlimited recommendations, advanced mood analysis, and exclusive features
+                    </p>
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-auto">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span style="color: #28a745; font-weight: bold;">✓</span>
+                                <span>Unlimited daily recommendations</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span style="color: #28a745; font-weight: bold;">✓</span>
+                                <span>Priority support</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span style="color: #28a745; font-weight: bold;">✓</span>
+                                <span>Early access to new features</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span style="color: #28a745; font-weight: bold;">✓</span>
+                                <span>Ad-free experience</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'subscribe' %}" class="btn btn-outline-light btn-lg px-5 py-3 fw-bold">
+                        ⭐ Upgrade Now - Only $20/month
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+
+{% endblock %}

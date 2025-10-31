@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ultra-premium AI-powered music discovery platform">
+    <meta name="theme-color" content="#FF0844">
+    <title>{% block title %}Song Recommender{% endblock %}</title>
+
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{% static 'recommender/css/style.css' %}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+</head>
+<body>
+
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- LEFT SIDE - LOGO/BRAND -->
+            <div class="nav-brand">
+                <a href="{% url 'home' %}" class="brand-link">
+                    <span class="brand-icon">🎵</span>
+                    <span>Song Recommender</span>
+                </a>
+            </div>
+
+            <!-- CENTER - NAVIGATION MENU -->
+            <div class="nav-menu">
+                <a href="{% url 'home' %}" class="nav-link{% if request.resolver_match.url_name == 'home' %} active{% endif %}">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'subscribe' %}" class="nav-link{% if request.resolver_match.url_name == 'subscribe' %} active{% endif %}">
+                        <span class="nav-icon">⭐</span>
+                        <span>Subscribe</span>
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- RIGHT SIDE - USER MENU -->
+            <div class="header-right">
+                {% if user.is_authenticated %}
+
+                    <div class="user-dropdown">
+                        <button class="user-button" id="userMenuBtn">
+                            <span class="user-avatar">
+                                <span class="avatar-letter">{{ user.username|first|upper }}</span>
+                            </span>
+                            <span class="user-info">
+                                <span class="user-name">{{ user.username }}</span>
+                                <span class="user-email">{{ user.email|default:"user@example.com" }}</span>
+                            </span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <!-- User Info Header -->
+                            <div class="dropdown-header">
+                                <div class="dropdown-avatar">
+                                    <span class="avatar-letter-large">{{ user.username|first|upper }}</span>
+                                </div>
+                                <div class="dropdown-user-info">
+                                    <div class="dropdown-username">{{ user.username }}</div>
+                                    <div class="dropdown-email">{{ user.email|default:"user@example.com" }}</div>
+                                </div>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Admin Panel (conditional - only for staff) -->
+                            {% if user.is_staff %}
+                            <a href="{% url 'admin:index' %}" class="dropdown-item">
+                                <span class="dropdown-icon">⚙️</span>
+                                <span>Admin Panel</span>
+                                <span class="dropdown-badge">Staff</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            {% endif %}
+
+                            <!-- Logout -->
+                            <a href="{% url 'logout' %}" class="dropdown-item logout-item">
+                                <span class="dropdown-icon">🚪</span>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-link">
+                        <span class="nav-icon">🔑</span>
+                        <span>Login</span>
+                    </a>
+                    <a href="{% url 'signup' %}" class="nav-link nav-cta">
+                        <span class="nav-icon">✨</span>
+                        <span>Sign Up</span>
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- MOBILE HAMBURGER MENU -->
+            <button class="nav-toggle">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="message message-{{ message.tags }}" role="alert">
+                        <span class="message-icon">
+                            {% if message.tags == 'success' %}✅
+                            {% elif message.tags == 'error' %}❌
+                            {% elif message.tags == 'warning' %}⚠️
+                            {% else %}ℹ️{% endif %}
+                        </span>
+                        <span class="message-text">{{ message }}</span>
+                        <button class="message-close" aria-label="Close message">×</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer - ULTRA PREMIUM REDESIGN -->
+    <footer class="footer-premium">
+        <!-- Top Glow Line -->
+        <div class="footer-glow-line-premium"></div>
+
+        <!-- Main Container -->
+        <div class="footer-container-premium">
+            <!-- Main Grid -->
+            <div class="footer-grid-premium">
+                <!-- Column 1 - Brand -->
+                <div class="footer-brand-premium">
+                    <div class="footer-brand-name-premium">
+                        <span class="footer-brand-icon-premium">🎵</span>
+                        <span class="footer-brand-text-premium">Song Recommender</span>
+                    </div>
+                    <p class="footer-tagline-premium">
+                        Discover the perfect soundtrack for every emotion with AI-powered music recommendations.
+                    </p>
+                    <div class="footer-social-premium">
+                        <a href="#" class="social-link-premium" aria-label="Music">
+                            <span class="social-icon-premium">🎵</span>
+                        </a>
+                        <a href="#" class="social-link-premium" aria-label="Twitter">
+                            <span class="social-icon-premium">🐦</span>
+                        </a>
+                        <a href="#" class="social-link-premium" aria-label="Instagram">
+                            <span class="social-icon-premium">📸</span>
+                        </a>
+                        <a href="#" class="social-link-premium" aria-label="Email">
+                            <span class="social-icon-premium">💌</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Column 2 - Quick Links -->
+                <div class="footer-column-premium">
+                    <h4 class="footer-heading-premium">QUICK LINKS</h4>
+                    <ul class="footer-links-premium">
+                        <li><a href="{% url 'home' %}" class="footer-link-premium">Home</a></li>
+                        <li><a href="{% url 'search' %}" class="footer-link-premium">Search Songs</a></li>
+                        <li><a href="{% url 'subscribe' %}" class="footer-link-premium">Premium</a></li>
+                        <li><a href="#" class="footer-link-premium">API Docs</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3 - Product -->
+                <div class="footer-column-premium">
+                    <h4 class="footer-heading-premium">PRODUCT</h4>
+                    <ul class="footer-links-premium">
+                        <li><a href="#" class="footer-link-premium">Features</a></li>
+                        <li><a href="#" class="footer-link-premium">Pricing</a></li>
+                        <li><a href="#" class="footer-link-premium">Enterprise</a></li>
+                        <li><a href="#" class="footer-link-premium">Integrations</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4 - Newsletter -->
+                <div class="footer-column-premium">
+                    <h4 class="footer-heading-premium">STAY UPDATED</h4>
+                    <p class="footer-newsletter-text-premium">
+                        Get the latest features and music discoveries delivered to your inbox.
+                    </p>
+                    <form class="footer-newsletter-premium" id="newsletter-form">
+                        <div class="newsletter-input-group-premium">
+                            <input
+                                type="email"
+                                id="newsletter-email"
+                                class="newsletter-input-premium"
+                                placeholder="Enter your email"
+                                required
+                            >
+                            <button type="submit" class="newsletter-btn-premium" id="newsletter-submit">
+                                <span class="newsletter-btn-text-premium">Subscribe</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom-premium">
+                <div class="footer-bottom-content-premium">
+                    <div class="footer-copyright-premium">
+                        <span>Made with <span class="heart-premium">❤️</span> by Song Recommender Team</span>
+                    </div>
+                    <div class="footer-legal-premium">
+                        <a href="#" class="footer-legal-link-premium">Privacy Policy</a>
+                        <span class="footer-legal-separator-premium">•</span>
+                        <a href="#" class="footer-legal-link-premium">Terms of Service</a>
+                        <span class="footer-legal-separator-premium">•</span>
+                        <a href="#" class="footer-legal-link-premium">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decorative Elements -->
+        <div class="footer-decoration-premium">
+            <span class="decoration-note-premium">🎵</span>
+        </div>
+    </footer>
+
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" aria-label="Back to top">
+        <span class="back-to-top-icon">↑</span>
+    </button>
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'recommender/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

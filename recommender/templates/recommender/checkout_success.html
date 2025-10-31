@@ -1,0 +1,99 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}Payment Successful - Song Recommender{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow text-center">
+            <div class="card-body p-5">
+                <!-- Success Icon -->
+                <div class="mb-4">
+                    <div style="font-size: 4rem; color: #28a745;">
+                        ✅
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <h2 class="mb-3">Payment Successful!</h2>
+                <p class="text-muted mb-4">
+                    Thank you for your subscription. Your payment has been processed successfully.
+                </p>
+
+                <!-- Subscription Details -->
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Subscription Details</h5>
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Plan:</span>
+                            <strong>{{ plan_type|title }}</strong>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <span>Valid Until:</span>
+                            <strong>{{ end_date|date:"F d, Y" }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features -->
+                <div class="mb-4">
+                    <h6 class="mb-3">You now have access to:</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <span>Unlimited song searches</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <span>Unlimited recommendations</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <span>Advanced sentiment analysis</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <span>Priority support</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2">
+                    <a href="{% url 'home' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-house"></i> Go to Home
+                    </a>
+                    <a href="{% url 'mood_recommendations' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-music-note-beamed"></i> Start Discovering Music
+                    </a>
+                </div>
+
+                <!-- Support -->
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-question-circle"></i>
+                        Need help? <a href="#">Contact support</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="bi bi-info-circle"></i> What's Next?</h6>
+                <ol class="small mb-0">
+                    <li>Your subscription is now active</li>
+                    <li>You have unlimited searches and recommendations</li>
+                    <li>Enjoy discovering music based on your mood!</li>
+                    <li>Your subscription will renew on {{ end_date|date:"F d, Y" }}</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

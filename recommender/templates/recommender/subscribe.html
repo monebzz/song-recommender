@@ -1,0 +1,97 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}Subscribe - Song Recommender{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="text-center mb-5">
+            <h1 class="display-5">Choose Your Plan</h1>
+            <p class="lead text-muted">Get unlimited song searches and recommendations</p>
+        </div>
+
+        {% if has_subscription %}
+            <div class="alert alert-success text-center">
+                <h4><i class="bi bi-check-circle"></i> You have an active subscription!</h4>
+                {% if active_subscription %}
+                    <p class="mb-0">
+                        Plan: <strong>{{ active_subscription.get_plan_type_display }}</strong><br>
+                        Valid until: <strong>{{ active_subscription.end_date|date:"F d, Y" }}</strong>
+                    </p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h3>Monthly Plan</h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="display-4 mb-3">${{ monthly_price }}</div>
+                        <p class="text-muted">per month</p>
+                        
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Unlimited song searches</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Unlimited recommendations</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Sentiment analysis</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Cancel anytime</li>
+                        </ul>
+
+                        {% if not has_subscription %}
+                            <a href="{% url 'checkout' 'monthly' %}" class="btn btn-primary btn-lg w-100">
+                                Subscribe Monthly
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-lg w-100" disabled>
+                                Current Plan
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100 border-success">
+                    <div class="card-header bg-success text-white text-center py-3">
+                        <h3>Yearly Plan</h3>
+                        <span class="badge bg-warning text-dark">Save 58%</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="display-4 mb-3">${{ yearly_price }}</div>
+                        <p class="text-muted">per year</p>
+                        
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Unlimited song searches</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Unlimited recommendations</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Sentiment analysis</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Best value</li>
+                        </ul>
+
+                        {% if not has_subscription %}
+                            <a href="{% url 'checkout' 'yearly' %}" class="btn btn-success btn-lg w-100">
+                                Subscribe Yearly
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-lg w-100" disabled>
+                                Current Plan
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5><i class="bi bi-gift"></i> Free Tier</h5>
+                <p class="mb-0">
+                    Not ready to subscribe? You can still use our service with <strong>10 free searches per day</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

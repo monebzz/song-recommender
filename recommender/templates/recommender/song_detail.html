@@ -1,0 +1,124 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}{{ song.title }} - Song Recommender{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="hero-title mb-4">
+                {{ song.title }}
+            </h1>
+            <p class="hero-subtitle mb-4">
+                by <strong class="text-gradient">{{ song.artist }}</strong>
+            </p>
+            {% if song.album %}
+            <p class="text-muted mb-4">
+                from <em>{{ song.album }}</em>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Song Details Card -->
+            <div class="row g-30 mb-5">
+                <div class="col-lg-8">
+                    <div class="card h-100">
+                        {% if song.cover %}
+                        <div class="card-img-container">
+                            <img src="{{ song.cover }}" alt="{{ song.title }} cover" class="card-img">
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h2 class="card-title mb-3">{{ song.title }}</h2>
+                            <h5 class="text-muted mb-4">{{ song.artist }}</h5>
+
+                            {% if song.album %}
+                            <p class="mb-3"><strong>Album:</strong> {{ song.album }}</p>
+                            {% endif %}
+
+                            <!-- Sentiment Badge -->
+                            <div class="mb-4">
+                                <strong>Sentiment Score:</strong>
+                                {% if song.sentiment > 0.3 %}
+                                <span class="badge bg-success ms-2">
+                                    {{ sentiment_label }} ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% elif song.sentiment < -0.3 %}
+                                <span class="badge bg-danger ms-2">
+                                    {{ sentiment_label }} ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary ms-2">
+                                    {{ sentiment_label }} ({{ song.sentiment|floatformat:2 }})
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Audio Preview -->
+                            {% if song.preview %}
+                            <div class="mb-4">
+                                <strong>Preview:</strong>
+                                <audio controls class="w-100 mt-2">
+                                    <source src="{{ song.preview }}" type="audio/mpeg">
+                                </audio>
+                            </div>
+                            {% endif %}
+
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2">
+                                <a href="{{ song.link }}" target="_blank" class="btn btn-primary btn-lg">
+                                    Listen on Deezer
+                                </a>
+                                <a href="{% url 'search' %}?q={{ song.artist }}" class="btn btn-outline-primary btn-lg">
+                                    More from {{ song.artist }}
+                                </a>
+                            </div>
+                        </div>
+e                    </div>
+                </div>
+
+                <!-- Recommendations Sidebar -->
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">Similar Songs</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recommendations %}
+                            <div class="list-group list-group-flush">
+                                {% for rec in recommendations %}
+                                <a href="{% url 'song_detail' rec.deezer_id %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ rec.title }}</h6>
+                                        {% if rec.sentiment > 0.3 %}
+                                        <small class="text-success">Positive</small>
+                                        {% elif rec.sentiment < -0.3 %}
+                                        <small class="text-danger">Negative</small>
+                                        {% else %}
+                                        <small class="text-secondary">Neutral</small>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ rec.artist }}</small>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No recommendations available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,10 @@
+Django>=4.2
+djangorestframework
+requests
+textblob
+python-dotenv
+django-environ
+pytest
+pytest-django
+gunicorn
+stripe
