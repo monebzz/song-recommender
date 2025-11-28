@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
+import uuid
 
 
 class Song(models.Model):
@@ -40,6 +41,8 @@ class UserProfile(models.Model):
     last_usage_date = models.DateField(null=True, blank=True)
     current_mood = models.CharField(max_length=20, choices=MOOD_CHOICES, blank=True)
     last_mood_update = models.DateTimeField(null=True, blank=True)
+    email_verified = models.BooleanField(default=False)
+    verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __str__(self):
         return f"{self.user.username} - Profile"

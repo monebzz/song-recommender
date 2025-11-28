@@ -1,11 +1,12 @@
 import os
 import django
+import time
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'song_recommender.settings')
 django.setup()
 
 from recommender.models import Song
-from recommender.utils import SentimentAnalyzer
+from recommender.utils import SentimentAnalyzer, DeezerAPI
 
 # Mock songs with different sentiments
 mock_songs = [
@@ -70,7 +71,39 @@ analyzer = SentimentAnalyzer()
 created_count = 0
 updated_count = 0
 
+print("Fetching song details from Deezer API...")
+
 for song_data in mock_songs:
+    # Fetch real details from Deezer
+    try:
+        # Search for the song to get the real ID and details if the mock ID is fake
+        # Or if the ID is real, just get details. 
+        # Since our mock IDs are likely fake (1001, etc), we should search by title/artist
+        print(f"Searching for: {song_data['title']} - {song_data['artist']}")
+        results = DeezerAPI.search_songs(f"{song_data['title']} {song_data['artist']}", limit=1)
+        
+        if results:
+            track = results[0]
+            # Update data with real info
+            song_data['deezer_id'] = str(track['id'])
+            song_data['title'] = track['title']
+            song_data['artist'] = track['artist']['name']
+            song_data['album'] = track['album']['title']
+            song_data['link'] = track['link']
+            song_data['preview'] = track['preview']
+            song_data['cover'] = track['album']['cover_xl']
+            print(f"  Found: {song_data['title']} (Cover: {song_data['cover'][:30]}...)")
+        else:
+            print(f"  ⚠️ Not found on Deezer, using placeholder.")
+            song_data['cover'] = f"https://placehold.co/400x400/333333/FFFFFF?text={song_data['title']}"
+            
+        # Sleep briefly to avoid rate limits
+        time.sleep(0.2)
+        
+    except Exception as e:
+        print(f"  ❌ Error fetching from Deezer: {e}")
+        song_data['cover'] = f"https://placehold.co/400x400/333333/FFFFFF?text={song_data['title']}"
+
     # Calculate sentiment
     sentiment = analyzer.analyze_song(song_data['title'], song_data['artist'])
     song_data['sentiment'] = sentiment
@@ -83,11 +116,8 @@ for song_data in mock_songs:
     
     if created:
         created_count += 1
-        print(f"✅ Created: {song.title} by {song.artist} (sentiment: {sentiment:.2f})")
     else:
         updated_count += 1
-        print(f"🔄 Updated: {song.title} by {song.artist} (sentiment: {sentiment:.2f})")
 
 print(f"\n🎉 Done! Created {created_count} songs, updated {updated_count} songs.")
 print(f"Total songs in database: {Song.objects.count()}")
-

@@ -15,6 +15,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 import json
 import uuid
 import stripe
+from django.core.mail import send_mail
+from django.urls import reverse
 
 from .models import Song, UserProfile, Subscription, Purchase
 from .serializers import (
@@ -98,19 +100,51 @@ def user_signup(request):
         password2 = request.POST.get('password2')
 
         # Validation
-        if not username or not password1:
-            messages.error(request, 'Username and password are required.')
+        if not username or not password1 or not email:
+            messages.error(request, 'Username, email, and password are required.')
         elif password1 != password2:
             messages.error(request, 'Passwords do not match.')
         elif User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists.')
-        elif email and User.objects.filter(email=email).exists():
+        elif User.objects.filter(email=email).exists():
             messages.error(request, 'Email already registered.')
         else:
             # Create user
             user = User.objects.create_user(username=username, email=email, password=password1)
+            
+            # Create profile with verification token
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            # Send verification email
+            verification_url = request.build_absolute_uri(
+                reverse('verify_email', args=[profile.verification_token])
+            )
+            
+            subject = 'Verify your email address'
+            message = f'Hi {user.username},\n\nPlease click the link below to verify your email address:\n\n{verification_url}\n\nThanks,\nSong Recommender Team'
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, f'Account created! Please check your email ({email}) to verify your account.')
+            except Exception as e:
+                import traceback
+                print(f"❌ Error sending email: {e}")
+                print(f"Full traceback:")
+                traceback.print_exc()
+                print(f"EMAIL_BACKEND: {settings.EMAIL_BACKEND}")
+                print(f"EMAIL_HOST: {settings.EMAIL_HOST}")
+                print(f"EMAIL_PORT: {settings.EMAIL_PORT}")
+                print(f"EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+                print(f"DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
+                messages.warning(request, 'Account created but failed to send verification email.')
+
             login(request, user)
-            messages.success(request, f'Welcome, {user.username}! Your account has been created.')
             return redirect('home')
 
     return render(request, 'recommender/signup.html')
@@ -120,6 +154,22 @@ def user_logout(request):
     """User logout view"""
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
+    return redirect('home')
+
+
+def verify_email(request, token):
+    """Verify user's email address"""
+    try:
+        profile = UserProfile.objects.get(verification_token=token)
+        if not profile.email_verified:
+            profile.email_verified = True
+            profile.save()
+            messages.success(request, 'Your email has been verified successfully!')
+        else:
+            messages.info(request, 'Your email is already verified.')
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'Invalid verification link.')
+    
     return redirect('home')
 
 
